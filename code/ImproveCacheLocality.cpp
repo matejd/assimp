@@ -376,5 +376,88 @@ float ImproveCacheLocalityProcess::ProcessMesh( aiMesh* pMesh, unsigned int mesh
 	delete[] piIBOutput;
 	delete[] piCandidates;
 
+    // Reorder vertices in the vertex buffer, but keep the triangle order the same.
+    // Index buffer order is already optimized for post-transform vertex cache.
+    // This improves *pre*-transform vertex cache. See Forsyth:
+    // http://home.comcast.net/~tom_forsyth/papers/fast_vert_cache_opt.html
+    std::vector<unsigned int> remapping(pMesh->mNumVertices); // Index remapping.
+    std::vector<bool> alreadyMapped(pMesh->mNumVertices, false);
+
+    unsigned int newIndex = 0;
+    for (unsigned int f = 0; f < pMesh->mNumFaces; ++f) {
+        aiFace& face = pMesh->mFaces[f];
+        for (unsigned int i = 0; i < 3; ++i) {
+            const unsigned int oldIndex = face.mIndices[i];
+            if (!alreadyMapped[oldIndex]) {
+                // This index has not yet been seen.
+                // Remember index remapping.
+                remapping[oldIndex] = newIndex;
+                alreadyMapped[oldIndex] = true;
+                newIndex++;
+            }
+            face.mIndices[i] = remapping[oldIndex];
+        }
+    }
+
+    aiVector3D* newVertices = new aiVector3D[pMesh->mNumVertices];
+    for (unsigned int oldIndex = 0; oldIndex < pMesh->mNumVertices; ++oldIndex) {
+        newVertices[remapping[oldIndex]] = pMesh->mVertices[oldIndex];
+    }
+    delete [] pMesh->mVertices;
+    pMesh->mVertices = newVertices;
+
+    if (pMesh->HasNormals()) {
+        aiVector3D* newNormals = new aiVector3D[pMesh->mNumVertices];
+        for (unsigned int oldIndex = 0; oldIndex < pMesh->mNumVertices; ++oldIndex) {
+            newNormals[remapping[oldIndex]] = pMesh->mNormals[oldIndex];
+        }
+        delete [] pMesh->mNormals;
+        pMesh->mNormals = newNormals;
+    }
+
+	if (pMesh->HasTangentsAndBitangents()) {
+		aiVector3D* newTangents = new aiVector3D[pMesh->mNumVertices];
+		for (unsigned int oldIndex = 0; oldIndex < pMesh->mNumVertices; ++oldIndex) {
+            newTangents[remapping[oldIndex]] = pMesh->mTangents[oldIndex];
+		}
+		delete [] pMesh->mTangents;
+        pMesh->mTangents = newTangents;
+	}
+
+	if (pMesh->HasTangentsAndBitangents()) {
+		aiVector3D* newBitangents = new aiVector3D[pMesh->mNumVertices];
+		for (unsigned int oldIndex = 0; oldIndex < pMesh->mNumVertices; ++oldIndex) {
+            newBitangents[remapping[oldIndex]] = pMesh->mBitangents[oldIndex];
+		}
+		delete [] pMesh->mBitangents;
+        pMesh->mBitangents = newBitangents;
+	}
+
+	for (unsigned int c = 0; pMesh->HasVertexColors(c); ++c) {
+        aiColor4D* newColors = new aiColor4D[pMesh->mNumVertices];
+        for (unsigned int oldIndex = 0; oldIndex < pMesh->mNumVertices; ++oldIndex) {
+            newColors[remapping[oldIndex]] = pMesh->mColors[c][oldIndex];
+        }
+        delete [] pMesh->mColors[c];
+        pMesh->mColors[c] = newColors;
+	}
+
+	for (unsigned int u = 0; pMesh->HasTextureCoords(u); ++u) {
+        aiVector3D* newTextureCoords = new aiVector3D[pMesh->mNumVertices];
+        for (unsigned int oldIndex = 0; oldIndex < pMesh->mNumVertices; ++oldIndex) {
+            newTextureCoords[remapping[oldIndex]] = pMesh->mTextureCoords[u][oldIndex];
+        }
+        delete [] pMesh->mTextureCoords[u];
+        pMesh->mTextureCoords[u] = newTextureCoords;
+	}
+
+	for (unsigned int b = 0; b < pMesh->mNumBones; ++b) {
+		aiBone* bone = pMesh->mBones[b];
+		for (unsigned int w = 0; w < bone->mNumWeights; ++w) {
+			aiVertexWeight& weight = bone->mWeights[w];
+            weight.mVertexId = remapping[weight.mVertexId];
+		}
+	}
+
 	return fACMR2;
 }
