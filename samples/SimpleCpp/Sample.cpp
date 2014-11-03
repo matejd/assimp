@@ -38,15 +38,15 @@ void setupMesh();
 
 int main(int argc, char** argv)
 {
-	glutInit(&argc, argv);
-	glutInitWindowSize(1280, 720);
-	glutInitWindowPosition(100, 100);
-	glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-	gWinId = glutCreateWindow("Assimp");
+    glutInit(&argc, argv);
+    glutInitWindowSize(1280, 720);
+    glutInitWindowPosition(100, 100);
+    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    gWinId = glutCreateWindow("Assimp");
     glutKeyboardFunc(keyboard);
-	glutDisplayFunc(display);
-	glutIdleFunc(display);
-	glutReshapeFunc(reshape);
+    glutDisplayFunc(display);
+    glutIdleFunc(display);
+    glutReshapeFunc(reshape);
 
     glewInit();
 
@@ -54,7 +54,7 @@ int main(int argc, char** argv)
     setupMesh();
     glutMainLoop();
 
-	return 0;
+    return 0;
 }
 
 void keyboard(unsigned char key, int x, int y)
@@ -95,7 +95,7 @@ void display()
 void setupMesh()
 {
     // Log everything.
-	Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE, aiDefaultLogStream_STDOUT);
+    Assimp::DefaultLogger::create("", Assimp::Logger::VERBOSE, aiDefaultLogStream_STDOUT);
 
     Assimp::Importer assImport;
     const aiScene* assScene = assImport.ReadFile(kMeshFilename.c_str(),
@@ -187,10 +187,10 @@ void setupShaders()
     ASSERT(mvpLoc != -1);
     glUseProgram(shaderId);
     const float mvp[16] = {
-       -0.67087, -0.273615, 0.235224, 0.229416,
-       0, 0.912049, 0.705671, 0.688247,
-       0.223623, -0.820844, 0.705671, 0.688247,
-       0, -7.49333e-08, 2.03209, 2.17945};
+       -0.67087, -0.273615,    0.235224, 0.229416,
+       0,         0.912049,    0.705671, 0.688247,
+       0.223623, -0.820844,    0.705671, 0.688247,
+       0,        -7.49333e-08, 2.03209,  2.17945};
     glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, mvp);
 
     ASSERT(glGetError() == GL_NO_ERROR);

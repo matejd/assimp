@@ -57,3 +57,8 @@ SimpleAssimpViewX
   See http://sourceforge.net/projects/assimp/forums/forum/817654/topic/3917829
 
 
+SimpleCpp
+
+  Short C++ modern OpenGL (well, not-deprecated) example. Vertex/index buffers + a shader.
+  Additionally contains GpuTimer, which can measure the time it takes for the GPU
+  to complete a sequence of draw commands. Requires glut and glew.
