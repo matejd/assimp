@@ -1,3 +1,12 @@
+Additions
+---------
+
+I've added a C++ sample (see samples/SimpleCpp). I've also added an additional step in ImproveCacheLocality post-process. This step reorders vertices, but keeps the
+triangle order the same (the triangle order is already optimized by the tipsify algorithm). It's a simple addition, but results in a few percent improvement in render
+times (on my ancient laptop, not sure about more modern hardware). SimpleCpp sample includes GPU timing capability, can be used to assess improvements.
+Unfortunately, there seems to be more regression tests failures than without the modification (234 vs 69), which is why I'm not submitting a pull request yet.
+
+
 Open Asset Import Library (assimp) 
 ========
 
